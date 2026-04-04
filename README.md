@@ -136,9 +136,9 @@ node index.js
 2. **Choisissez votre méthode de connexion** :
    ```
    📱 === PAIRING CODE AUTHENTICATION ===
-   1. Pairing Code (Recommandé)
-   2. QR Code
-   Choisissez : 1
+   1. Pairing Code 
+   2. QR Code (Recommandé)
+   Choisissez : 2
    ```
 
 3. **Entrez votre numéro** :
