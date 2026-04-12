@@ -48,19 +48,7 @@ async function run(sock, from, msg, args, config) {
 *© Power by Boss Edwa 🇭🇹*
 `;
 
-    await sock.sendMessage(from, { 
-        text: menuText,
-        contextInfo: {
-            externalAdReply: {
-                title: "📢 Edwa-MD Channel",
-                body: "Rejoindre channel la",
-                thumbnailUrl: "https://i.imgur.com/3YNv8Qp.png",
-                mediaType: 1,
-                sourceUrl: config.CHANNEL_LINK,
-                renderLargerThumbnail: true
-            }
-        }
-    });
+    await sock.sendMessage(from, { text: menuText });
 }
 
 module.exports = { run };

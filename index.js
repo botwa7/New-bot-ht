@@ -145,22 +145,20 @@ function wireCommandHandler(sock) {
     });
 }
 
-// ── Build SESSION_ID from in-memory creds ─────────────────────────────────────
-function buildSessionID(sock) {
+// ── Build SESSION_ID from saved creds file ────────────────────────────────────
+function buildSessionID() {
     try {
-        const credsJson = JSON.stringify(sock.authState.creds);
-        return `EDWA-MD;;;${Buffer.from(credsJson).toString('base64')}`;
-    } catch (_) {
-        try {
-            const credsData = fs.readFileSync('./auth/creds.json', 'utf-8');
-            return `EDWA-MD;;;${Buffer.from(credsData).toString('base64')}`;
-        } catch (_) { return null; }
-    }
+        const credsData = fs.readFileSync('./auth/creds.json', 'utf-8');
+        return `EDWA-MD;;;${Buffer.from(credsData).toString('base64')}`;
+    } catch (_) { return null; }
 }
 
 // ── Send deployment success DM ────────────────────────────────────────────────
 async function sendDeploymentSuccess(sock) {
-    const sessionID = buildSessionID(sock);
+    // Wait briefly to ensure creds are saved to disk
+    await new Promise(r => setTimeout(r, 2000));
+
+    const sessionID = buildSessionID();
     if (sessionID) {
         lastSessionID = sessionID;
         console.log('\n====== SESSION ID ======\n' + sessionID + '\n========================\n');
@@ -169,7 +167,6 @@ async function sendDeploymentSuccess(sock) {
     try {
         const ownerJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
 
-        // Rich deployment success message
         await sock.sendMessage(ownerJid, {
             text:
 `✅ *DÉPLOIEMENT RÉUSSI !*
@@ -181,21 +178,11 @@ async function sendDeploymentSuccess(sock) {
 🟢 *Status :* Opérationnel
 
 📋 *Votre SESSION_ID :*
-\`\`\`${sessionID || 'Récupérez sur /session'}\`\`\`
+\`\`\`${sessionID || 'Récupérez sur /api/session'}\`\`\`
 
 _Sauvegardez ce SESSION_ID pour redéployer sans scanner à nouveau._
 
-🇭🇹 *Power by Boss Edwa*`,
-            contextInfo: {
-                externalAdReply: {
-                    title: '🚀 EDWA-MD Déployé',
-                    body: 'Bot WhatsApp opérationnel',
-                    thumbnailUrl: 'https://i.imgur.com/3YNv8Qp.png',
-                    mediaType: 1,
-                    sourceUrl: config.CHANNEL_LINK,
-                    renderLargerThumbnail: true
-                }
-            }
+🇭🇹 *Power by Boss Edwa*`
         });
         console.log('✅ Deployment success DM sent to owner');
     } catch (e) {
