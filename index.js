@@ -155,6 +155,9 @@ function buildSessionID() {
 
 // ── Send deployment success DM ────────────────────────────────────────────────
 async function sendDeploymentSuccess(sock) {
+    if (deployMsgSent) return;
+    deployMsgSent = true;
+
     // Wait briefly to ensure creds are saved to disk
     await new Promise(r => setTimeout(r, 2000));
 
@@ -202,6 +205,7 @@ function closeSock() {
 function clearAuth() {
     if (fs.existsSync('./auth')) fs.rmSync('./auth', { recursive: true, force: true });
     fs.mkdirSync('./auth');
+    deployMsgSent = false;
 }
 
 async function createSocket(authDir = './auth') {
