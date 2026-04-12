@@ -283,12 +283,7 @@ async function startMainBot() {
             }
         } else if (connection === 'open') {
             console.log('✅ Bot opérationnel !');
-            try {
-                const ownerJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-                await sock.sendMessage(ownerJid, {
-                    text: `🌟 *EDWA-MD Online*\n\n*Prefix:* ${config.PREFIX}\n*Plugins:* ${config.PLUGINS_LIST.length}\n*Status:* 🟢 Opérationnel`
-                });
-            } catch (_) {}
+            await sendDeploymentSuccess(sock);
         }
     });
 }
