@@ -21,14 +21,14 @@
     "@cacheable/node-cache": "^3.0.0",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.21",
-    "axios": "^1.6.0",
+    "axios": "^1.15.0",
     "baileys": "^7.0.0-rc.9",
-    "dotenv": "^17.3.1",
-    "express": "^4.18.2",
+    "dotenv": "^17.4.1",
+    "express": "^4.22.1",
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
-    "pino": "^8.11.0",
-    "qrcode": "^1.5.3",
+    "pino": "^8.21.0",
+    "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0"
   },
   "engines": {
@@ -43,4 +43,3 @@
   },
   "homepage": "https://github.com/botwa7/EdwaTECH-md#readme"
 }
-
