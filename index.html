@@ -408,6 +408,18 @@
                 document.querySelector('.qr-wrap').innerHTML = `<div class="qr-placeholder" style="background:rgba(0,255,135,0.05);border-radius:8px"><span style="color:#00ff87;font-size:2rem">✅</span><span style="color:#00ff87;font-size:0.8rem">Connecté !</span></div>`;
                 document.getElementById('qr-success').style.display = 'block';
                 stopQR();
+                // Auto-poll and show SESSION_ID
+                const qrSessionPoll = setInterval(async () => {
+                    try {
+                        const sr = await fetch('/api/session');
+                        const sd = await sr.json();
+                        if (sd.success) {
+                            clearInterval(qrSessionPoll);
+                            document.getElementById('session-text').value = sd.session;
+                            document.getElementById('session-modal').style.display = 'flex';
+                        }
+                    } catch (_) {}
+                }, 3000);
             } else if (data.type === 'error') {
                 document.querySelector('.qr-wrap').innerHTML = `<div class="qr-placeholder"><span style="color:#ff6060">❌</span><span style="font-size:0.75rem;color:#ff6060">${data.error}</span></div>`;
             }
@@ -463,6 +475,8 @@
                 if (data.success) {
                     clearInterval(pairCheckInterval);
                     successBanner.style.display = 'block';
+                    document.getElementById('session-text').value = data.session;
+                    document.getElementById('session-modal').style.display = 'flex';
                 }
             } catch (_) {}
         }, 3000);
