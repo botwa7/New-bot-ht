@@ -230,6 +230,9 @@ async function createSocket(authDir = './auth') {
 
 // ── Main bot (auto-reconnect, persistent) ─────────────────────────────────────
 async function startMainBot() {
+    if (isReconnecting) return;
+    isReconnecting = true;
+
     const sessionString = process.env.SESSION_ID || '';
 
     if (sessionString && !fs.existsSync('./auth/creds.json')) {
@@ -240,8 +243,25 @@ async function startMainBot() {
         } catch (e) { console.log('Erreur décodage SESSION_ID'); }
     }
 
-    const { sock } = await createSocket('./auth');
+    // No credentials at all — wait for user to connect via panel
+    if (!fs.existsSync('./auth/creds.json')) {
+        console.log('⏳ Aucune session — ouvrez le panel pour vous connecter.');
+        isReconnecting = false;
+        return;
+    }
+
+    let sock;
+    try {
+        const result = await createSocket('./auth');
+        sock = result.sock;
+    } catch (e) {
+        console.error('Erreur création socket:', e.message);
+        isReconnecting = false;
+        return;
+    }
+
     botSock = sock;
+    isReconnecting = false;
     wireCommandHandler(sock);
 
     sock.ev.on('connection.update', async (update) => {
@@ -250,10 +270,16 @@ async function startMainBot() {
         if (connection === 'close') {
             const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
             if (reason === DisconnectReason.loggedOut) {
-                console.log('⚠️ Bot déconnecté (loggedOut) — ouvrez le panel pour reconnecter.');
+                console.log('⚠️ Session expirée (loggedOut) — effacement auth, reconnectez via le panel.');
+                clearAuth();
             } else {
-                console.log(`Reconnexion... (raison: ${reason})`);
-                setTimeout(() => startMainBot(), 3000);
+                // Only reconnect if we still have valid credentials
+                if (fs.existsSync('./auth/creds.json')) {
+                    console.log(`Reconnexion... (raison: ${reason})`);
+                    setTimeout(() => startMainBot(), 5000);
+                } else {
+                    console.log('⏳ Pas de session valide — ouvrez le panel pour reconnecter.');
+                }
             }
         } else if (connection === 'open') {
             console.log('✅ Bot opérationnel !');
@@ -306,8 +332,11 @@ app.get('/api/qr', async (req, res) => {
 
             if (connection === 'close') {
                 const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-                if (reason !== DisconnectReason.loggedOut) {
-                    setTimeout(() => startMainBot(), 3000);
+                if (reason === DisconnectReason.loggedOut) {
+                    console.log('⚠️ Session expirée (loggedOut) — effacement auth.');
+                    clearAuth();
+                } else if (fs.existsSync('./auth/creds.json')) {
+                    setTimeout(() => startMainBot(), 5000);
                 }
             }
         });
@@ -348,10 +377,11 @@ app.post('/api/pair', async (req, res) => {
                 if (connection === 'close') {
                     const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
                     if (reason === DisconnectReason.loggedOut) {
-                        console.log('Déconnecté (loggedOut).');
-                    } else {
+                        console.log('⚠️ Session expirée (loggedOut) — effacement auth.');
+                        clearAuth();
+                    } else if (fs.existsSync('./auth/creds.json')) {
                         console.log('Reconnexion après pairing...');
-                        setTimeout(() => startMainBot(), 3000);
+                        setTimeout(() => startMainBot(), 5000);
                     }
                 }
             });
