@@ -397,25 +397,32 @@ app.post('/api/pair', async (req, res) => {
 });
 
 // ── Server ────────────────────────────────────────────────────────────────────
-let currentPort = PORT;
-const server = app.listen(currentPort, '0.0.0.0');
+if (process.env.SESSION_ID) {
+    // SESSION_ID fourni → pas besoin du panel web, on démarre le bot directement
+    console.log('🔑 SESSION_ID trouvé — démarrage sans serveur web...');
+    startMainBot();
+} else {
+    // Pas de SESSION_ID → on démarre le panel web pour scanner le QR / pairing
+    let currentPort = PORT;
+    const server = app.listen(currentPort, '0.0.0.0');
 
-server.on('listening', () => {
-    console.log(`🌐 Serveur démarré sur le port ${currentPort}`);
-    const hasSavedSession = fs.existsSync('./auth/creds.json');
-    if (process.env.SESSION_ID || hasSavedSession) {
-        console.log(process.env.SESSION_ID ? '🔑 SESSION_ID trouvé — démarrage du bot...' : '💾 Session sauvegardée trouvée — reconnexion...');
-        startMainBot();
-    } else {
-        console.log('⏳ Aucune session — ouvrez le panel pour vous connecter.');
-    }
-});
+    server.on('listening', () => {
+        console.log(`🌐 Serveur démarré sur le port ${currentPort}`);
+        const hasSavedSession = fs.existsSync('./auth/creds.json');
+        if (hasSavedSession) {
+            console.log('💾 Session sauvegardée trouvée — reconnexion...');
+            startMainBot();
+        } else {
+            console.log('⏳ Aucune session — ouvrez le panel pour vous connecter.');
+        }
+    });
 
-server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-        currentPort++;
-        console.log(`Port ${currentPort - 1} occupé — essai sur le port ${currentPort}...`);
-        server.listen(currentPort, '0.0.0.0');
-    }
-});
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            currentPort++;
+            console.log(`Port ${currentPort - 1} occupé — essai sur le port ${currentPort}...`);
+            server.listen(currentPort, '0.0.0.0');
+        }
+    });
+}
 
