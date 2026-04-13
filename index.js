@@ -398,22 +398,9 @@ app.post('/api/pair', async (req, res) => {
 
 // ── Server ────────────────────────────────────────────────────────────────────
 let currentPort = PORT;
+const server = app.listen(currentPort, '0.0.0.0');
 
-function startServer(port) {
-    server.listen(port, '0.0.0.0', () => {
-        currentPort = port;
-        console.log(`🌐 Serveur démarré sur le port ${port}`);
-        const hasSavedSession = fs.existsSync('./auth/creds.json');
-        if (process.env.SESSION_ID || hasSavedSession) {
-            console.log(process.env.SESSION_ID ? '🔑 SESSION_ID trouvé — démarrage du bot...' : '💾 Session sauvegardée trouvée — reconnexion...');
-            startMainBot();
-        } else {
-            console.log('⏳ Aucune session — ouvrez le panel pour vous connecter.');
-        }
-    });
-}
-
-const server = app.listen(currentPort, '0.0.0.0', () => {
+server.on('listening', () => {
     console.log(`🌐 Serveur démarré sur le port ${currentPort}`);
     const hasSavedSession = fs.existsSync('./auth/creds.json');
     if (process.env.SESSION_ID || hasSavedSession) {
@@ -428,8 +415,7 @@ server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
         currentPort++;
         console.log(`Port ${currentPort - 1} occupé — essai sur le port ${currentPort}...`);
-        server.close();
-        startServer(currentPort);
+        server.listen(currentPort, '0.0.0.0');
     }
 });
 

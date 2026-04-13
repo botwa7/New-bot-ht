@@ -1,4 +1,3 @@
-const { generateWAMessageFromContent, proto } = require('baileys');
 const config = require('../config');
 
 async function run(sock, from, msg, args, cfg) {
@@ -18,7 +17,7 @@ async function run(sock, from, msg, args, cfg) {
 ┃ *ᴍᴏᴅᴇ* : ${cfg.MODE}
 ┃ *ᴠᴇʀsɪᴏɴ* : ${cfg.VERSION}
 ┃ *ᴜᴘᴛɪᴍᴇ* : ${uptimeStr}
-┗ 
+┗
 
 ┏▣  *GROUP MENU* ◈
 │➽ promote @user
@@ -50,14 +49,16 @@ async function run(sock, from, msg, args, cfg) {
 
 *© Power by Boss Edwa 🇭🇹*`;
 
-    const buttons = [
-        { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '🏓 Ping', id: `${cfg.PREFIX}ping` }) },
-        { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '🤖 Alive', id: `${cfg.PREFIX}alive` }) },
-        { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '👤 Owner', id: `${cfg.PREFIX}owner` }) },
-        { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '📡 Repo', id: `${cfg.PREFIX}repo` }) },
-    ];
-
     try {
+        const { generateWAMessageFromContent, proto } = require('baileys');
+
+        const buttons = [
+            { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '🏓 Ping', id: `${cfg.PREFIX}ping` }) },
+            { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '🤖 Alive', id: `${cfg.PREFIX}alive` }) },
+            { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '👤 Owner', id: `${cfg.PREFIX}owner` }) },
+            { name: 'quick_reply', buttonParamsJson: JSON.stringify({ display_text: '📡 Repo', id: `${cfg.PREFIX}repo` }) },
+        ];
+
         const interactive = generateWAMessageFromContent(from, {
             interactiveMessage: proto.Message.InteractiveMessage.create({
                 body: proto.Message.InteractiveMessage.Body.create({ text: menuText }),
